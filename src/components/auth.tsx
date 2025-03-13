@@ -1,84 +1,91 @@
 import { supabase } from "@/utils/supabase"
-import React, { useState } from "react"
-import { Alert, SafeAreaView, StyleSheet, View } from "react-native"
-import { Input, Button } from "@rneui/themed"
+import React from "react"
+import { Alert, SafeAreaView, View } from "react-native"
+import { Heading } from "@/components/ui/heading"
+import { Text } from "@/components/ui/text"
+import { Button, ButtonIcon, ButtonText } from "@/components/ui/button"
+import { Controller, useForm } from "react-hook-form"
+import { LogIn } from "lucide-react-native"
+import { Spinner } from "@/components/ui/spinner"
+import { Input, InputField } from "@/components/ui/input"
 
 export default function Auth() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [loading, setLoading] = useState(false)
+  const { control, formState, handleSubmit } = useForm({
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  })
 
-  async function signInWithEmail() {
-    setLoading(true)
+  async function signInWithEmail({ email, password }: { email: string; password: string }) {
+    if (!email || !password) {
+      Alert.alert("Email and password are required!")
+      return
+    }
+
     const { error } = await supabase.auth.signInWithPassword({
       email: email,
       password: password,
     })
 
     if (error) Alert.alert(error.message)
-    setLoading(false)
-  }
-
-  async function signUpWithEmail() {
-    setLoading(true)
-    const {
-      data: { session },
-      error,
-    } = await supabase.auth.signUp({
-      email: email,
-      password: password,
-    })
-
-    if (error) Alert.alert(error.message)
-    if (!session) Alert.alert("Please check your inbox for email verification!")
-    setLoading(false)
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={[styles.verticallySpaced, styles.mt20]}>
-        <Input
-          label="Email"
-          leftIcon={{ type: "font-awesome", name: "envelope" }}
-          onChangeText={(text) => setEmail(text)}
-          value={email}
-          placeholder="email@address.com"
-          autoCapitalize={"none"}
-        />
-      </View>
-      <View style={styles.verticallySpaced}>
-        <Input
-          label="Password"
-          leftIcon={{ type: "font-awesome", name: "lock" }}
-          onChangeText={(text) => setPassword(text)}
-          value={password}
-          secureTextEntry={true}
-          placeholder="Password"
-          autoCapitalize={"none"}
-        />
-      </View>
-      <View style={[styles.verticallySpaced, styles.mt20]}>
-        <Button title="Sign in" disabled={loading} onPress={() => signInWithEmail()} />
-      </View>
-      <View style={styles.verticallySpaced}>
-        <Button title="Sign up" disabled={loading} onPress={() => signUpWithEmail()} />
+    <SafeAreaView className="flex-1 items-center justify-center">
+      <View className="mx-auto flex flex-col gap-6">
+        {/* Header */}
+        <View>
+          <Heading className="text-center" size="2xl">
+            Login to your account
+          </Heading>
+          <Text className="text-center">Enter your email below to login to your account</Text>
+        </View>
+
+        <View className="flex flex-col gap-4">
+          <Controller
+            control={control}
+            name="email"
+            render={({ field }) => (
+              <Input className="rounded-lg">
+                <InputField
+                  type="text"
+                  placeholder="Email address"
+                  value={field.value}
+                  onChangeText={(value) => field.onChange(value)}
+                />
+              </Input>
+            )}
+          />
+
+          <Controller
+            control={control}
+            name="password"
+            render={({ field }) => (
+              <Input className="rounded-lg">
+                <InputField
+                  type="password"
+                  placeholder="Password"
+                  value={field.value}
+                  onChangeText={(value) => field.onChange(value)}
+                />
+              </Input>
+            )}
+          />
+
+          <Button variant="solid" action="primary" onPress={handleSubmit(signInWithEmail)}>
+            <ButtonText>Login</ButtonText>
+            <ButtonIcon as={formState.isSubmitting ? Spinner : LogIn} size="sm" />
+          </Button>
+        </View>
+
+        {/* <Text className="text-center">
+          Don't have an account?{" "}
+          <Text onPress={() => router.replace("/signup")} className="underline">
+            Sign up
+          </Text>
+        </Text> */}
       </View>
     </SafeAreaView>
   )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  verticallySpaced: {
-    paddingTop: 4,
-    paddingBottom: 4,
-    alignSelf: "stretch",
-  },
-  mt20: {
-    marginTop: 20,
-  },
-})

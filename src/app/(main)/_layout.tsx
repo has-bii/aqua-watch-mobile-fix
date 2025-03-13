@@ -6,6 +6,7 @@ import React from "react"
 import { AppState, Platform } from "react-native"
 import type { AppStateStatus } from "react-native"
 import { focusManager } from "@tanstack/react-query"
+import LoadingState from "@/components/loading"
 
 AppState.addEventListener("change", (state) => {
   if (state === "active") {
@@ -22,15 +23,18 @@ function onAppStateChange(status: AppStateStatus) {
 }
 
 export default function Layout() {
+  const [loading, setLoading] = React.useState(true)
   const [session, setSession] = React.useState<Session | null>(null)
 
   React.useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
+      setLoading(false)
     })
 
     supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
+      setLoading(false)
     })
   }, [])
 
@@ -39,6 +43,8 @@ export default function Layout() {
 
     return () => subscription.remove()
   }, [])
+
+  if (loading) return <LoadingState />
 
   if (!session) return <Auth />
 
