@@ -47,7 +47,7 @@ export default function Tab() {
                   params: { id: aquarium.id },
                 }}
               >
-                <Pressable className="aspect-video w-1/2">
+                <Pressable className="aspect-video w-1/2 p-2">
                   <View className="flex-1 rounded-xl bg-[#E7FAF9] p-4">
                     <Heading size="md" className="mb-1">
                       {aquarium.name}
